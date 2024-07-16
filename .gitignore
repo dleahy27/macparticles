@@ -67,3 +67,11 @@ dataset*/
 # Old copies of files #
 #######################
 *.old
+
+# Directories #
+###############
+examples/toy/fast_sim
+examples/toy/results10
+examples/gluex/fast_sim
+examples/gluex/results10
+examples/gluex/data
