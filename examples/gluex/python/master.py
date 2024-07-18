@@ -7,24 +7,6 @@ import ROOT
 import os
 import sys
 
-def ProgressBar(j, initial_wall_time, N):
-    a = int(20*i/N)
-
-    remaining = ((time() - initial_wall_time) / (i+1) * (N - i))
-            
-    mins, secs = divmod(remaining, 60)
-    hours, mins = divmod(mins, 60)
-    time_str = str(int(hours))+":"+str(int(mins))+":"+str(round(secs,2))
-
-    if i==0:
-        time_str="--:--:--.--"
-
-    prefix="\t" 
-    sys.stdout.write(prefix+"["+'#'*a+('.'*(20-a))+"] "+str(round(100*i/N,2))+"% ETA "+ time_str + ' \r')
-    sys.stdout.flush()
-
-    return
-
 # Function to get mass
 def GetMass(particle):
     return 0.125
@@ -70,8 +52,7 @@ if __name__ == '__main__':
         truP[i,:] = dfTruth.AsNumpy(columns=["truth."+particle+"P"])["truth."+particle+"P"]
         truTheta[i,:] = dfTruth.AsNumpy(["truth."+particle+"Theta"])["truth."+particle+"Theta"]
         truPhi[i,:] = dfTruth.AsNumpy(["truth."+particle+"Phi"])["truth."+particle+"Phi"]
-        #truAcc = np.append(truAcc,dfTruth.AsNumpy(["accepted_"+particle])["accepted_"+particle])
-        #print(truAcc)
+        truAcc[i,:] = dfTruth.AsNumpy(["accepted_"+particle])["accepted_"+particle].astype(np.uint)
         
         # fast sim reconstructed data + acceptances
         dfRecon = ROOT.RDataFrame('recon',"results10/"+particle+"/predictions.root")
@@ -83,7 +64,7 @@ if __name__ == '__main__':
         # Fast sim acceptences in another file
         dfAcc = ROOT.RDataFrame('acceptance',"results10/"+particle+"/simulation_acceptances.root")
         
-        #recAcc[i,:] = dfAcc.AsNumpy(["accept_"+particle])["accept_"+particle]
+        recAcc[i,:] = dfAcc.AsNumpy(["accept_"+particle])["accept_"+particle].astype(np.uint)
 
         i += 1
 
@@ -91,8 +72,8 @@ if __name__ == '__main__':
     # I believe this is what Dr Glazier wants
     init = time()
     # For some reason needs np.array to work?
-    df = ROOT.RDF.MakeNumpyDataFrame({'truP' : np.array(truP[:,:]), 'truTheta' : np.array(truTheta[:,:]), 'truPhi' : np.array(truPhi[:,:]), #'truAcc' : truAcc,
-                                    'recP' : np.array(recP[:,:]), 'recTheta' : np.array(recTheta[:,:]), 'recPhi' : np.array(recPhi[:,:]), #'recAcc' : recAcc,
+    df = ROOT.RDF.MakeNumpyDataFrame({'truP' : np.array(truP[:,:]), 'truTheta' : np.array(truTheta[:,:]), 'truPhi' : np.array(truPhi[:,:]), 'truAcc' : np.array(truAcc[:,:]),
+                                    'recP' : np.array(recP[:,:]), 'recTheta' : np.array(recTheta[:,:]), 'recPhi' : np.array(recPhi[:,:]), 'recAcc' : np.array(recAcc[:,:]),
                                     'M' : np.array(M[:,:]), 'PID' :  np.array(PID[:,:]), 'Sync' : np.array(sync[:,:])
                                     })
     df.Snapshot('tree', 'master.root')
