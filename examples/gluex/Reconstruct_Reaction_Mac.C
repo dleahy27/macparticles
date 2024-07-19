@@ -294,7 +294,7 @@ struct HistsPhysRes{
   TH1D hCosTh={"CosTh","cos(#theta_{GJ})",110,-2,2};
   TH1D hPhi={"Phi","#phi_{GJ} (#circ)",110,-15,15};
   TH1D hCMCosTh={"CosTh","cos(#theta_{CM})",110,-0.3,0.3};
-  TH1D hCMPhi={"Phi","#phi_{CM} (#circ)",110,-15,15};
+  TH1D hCMPhi={"Phi","#phi_{CM} (#circ)",110,-5,5};
 
   TH1D hpP={"pP","proton Momentum Resolution (GeV)",100,-2,2};
   TH1D hpTheta={"pTheta","proton #theta Resolution (#circ)",100,-45,45};
@@ -443,7 +443,6 @@ void DrawPOnCanvas(TCanvas* can,TString opt,Int_t colour){
     auto cosThR=_cosTh;
     auto phiR=_phi;
     MesonDecayGJ(trumeson,truBar,fGamma,truMes_d1,truMes_d2);
-    
     hCosTh.Fill(_cosTh-cosThR);
     hPhi.Fill(_phi-phiR);
 
@@ -542,7 +541,7 @@ void Reconstruct_Reaction_Mac(){
 
   TTreeReader     fReader;  //!the tree reader
   
-  auto file= TFile::Open("gluex_reaction.root");
+  auto file= TFile::Open("./data/gluex_reaction.root");
   auto tree= file->Get<TTree>("tree");
   tree->SetEntries(1E6);
   auto filePip= TFile::Open("results10/pip/predictions.root");
@@ -670,8 +669,9 @@ void Reconstruct_Reaction_Mac(){
      if(*accepted_pip&&*fast_acc_pip){
         hf.Res_2pipP.Fill(*tr_pipP,*tr_pipP-*fast_pipP);
      }
-     if(*accepted_pip&&*fast_acc_pip) hf.Diff_pipP.Fill(*rec_pipP-*fast_pipP);
-
+     if(*accepted_pip&&*fast_acc_pip){
+      hf.Diff_pipP.Fill(*rec_pipP-*fast_pipP);
+     }
      if(*accepted_pim){
        hr.Res_pimP.Fill(*tr_pimP-*rec_pimP);
        hr.Res_2pimP.Fill(*tr_pimP,*tr_pimP-*rec_pimP);
@@ -683,16 +683,19 @@ void Reconstruct_Reaction_Mac(){
        hf.Res_pimP.Fill(*tr_pimP-*fast_pimP);
        hf.Res_2pimP.Fill(*tr_pimP,*tr_pimP-*fast_pimP);
      }
-     if(*accepted_pim&&*fast_acc_pim) hf.Diff_pimP.Fill(*rec_pimP-*fast_pimP);
+     if(*accepted_pim&&*fast_acc_pim){
+      hf.Diff_pimP.Fill(*rec_pimP-*fast_pimP);
+      }
      
-     if(*accepted_pim&&*accepted_pip&&*accepted_p)
+     if(*accepted_pim&&*accepted_pip&&*accepted_p){
        hr.Res_TotP.Fill(*tr_pimP-*rec_pimP + *tr_pipP-*rec_pipP + *tr_pP-*rec_pP);
-     if(*fast_acc_pim&&*fast_acc_pip&&*fast_acc_p)
+      }
+     if(*fast_acc_pim&&*fast_acc_pip&&*fast_acc_p){
        hf.Res_TotP.Fill(*tr_pimP-*fast_pimP + *tr_pipP-*fast_pipP + *tr_pP-*fast_pP);
-
-     if(*accepted_pim&&*fast_acc_pim&&*accepted_pip&&*fast_acc_pip&&*accepted_p&&*fast_acc_p)
+      }
+     if(*accepted_pim&&*fast_acc_pim&&*accepted_pip&&*fast_acc_pip&&*accepted_p&&*fast_acc_p){
        hf.Diff_TotP.Fill(*rec_pimP-*fast_pimP+*rec_pipP-*fast_pipP+*rec_pP-*fast_pP);
-     
+      }
      if(*accepted_pim&&*fast_acc_pim&&*accepted_pip&&*fast_acc_pip&&*accepted_p&&*fast_acc_p){
        rpiDiff.Fill(*rec_pipP-*tr_pipP,(*rec_pimP-*tr_pimP));
        fpiDiff.Fill(*fast_pipP-*tr_pipP,(*fast_pimP-*tr_pimP));
@@ -705,12 +708,12 @@ void Reconstruct_Reaction_Mac(){
      CreateP4(recP4_pip,*rec_pipP,*rec_pipTheta,*rec_pipPhi,Mpi);
      CreateP4(recP4_pim,*rec_pimP,*rec_pimTheta,*rec_pimPhi,Mpi);
      
-     CreateP4(fastP4_p,*fast_pP,*fast_pTheta*TMath::DegToRad(),*fast_pPhi*TMath::DegToRad(),Mproton);
-     CreateP4(fastP4_pip,*fast_pipP,*fast_pipTheta*TMath::DegToRad(),*fast_pipPhi*TMath::DegToRad(),Mpi);
-     CreateP4(fastP4_pim,*fast_pimP,*fast_pimTheta*TMath::DegToRad(),*fast_pimPhi*TMath::DegToRad(),Mpi);
-    //  CreateP4(fastP4_p,*fast_pP,*fast_pTheta,*fast_pPhi,Mproton);
-    //  CreateP4(fastP4_pip,*fast_pipP,*fast_pipTheta,*fast_pipPhi,Mpi);
-    //  CreateP4(fastP4_pim,*fast_pimP,*fast_pimTheta,*fast_pimPhi,Mpi);
+    //  CreateP4(fastP4_p,*fast_pP,*fast_pTheta*TMath::DegToRad(),*fast_pPhi*TMath::DegToRad(),Mproton);
+    //  CreateP4(fastP4_pip,*fast_pipP,*fast_pipTheta*TMath::DegToRad(),*fast_pipPhi*TMath::DegToRad(),Mpi);
+    //  CreateP4(fastP4_pim,*fast_pimP,*fast_pimTheta*TMath::DegToRad(),*fast_pimPhi*TMath::DegToRad(),Mpi);
+     CreateP4(fastP4_p,*fast_pP,*fast_pTheta,*fast_pPhi,Mproton);
+     CreateP4(fastP4_pip,*fast_pipP,*fast_pipTheta,*fast_pipPhi,Mpi);
+     CreateP4(fastP4_pim,*fast_pimP,*fast_pimTheta,*fast_pimPhi,Mpi);
 
 
 
