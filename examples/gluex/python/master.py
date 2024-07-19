@@ -5,6 +5,11 @@ import numpy as np
 import ROOT
 import os
 import sys
+nullPtr = -1E6
+u_nullPtr = 1E6
+ROOT.gInterpreter.Declare("auto valFilter = [](double val){return val!=-1E6;};")
+ROOT.gInterpreter.Declare("auto u_valFilter = [](double val){return val!=1E6;};")
+ROOT.gInterpreter.Declare("auto accFilter = [](double val){return val!=0;};")
 
 # Leave these just as constants for now
 # Function to get mass
@@ -64,8 +69,6 @@ if __name__ == '__main__':
         dict["truTheta_"+particle] = truTheta
         truPhi = dfTruth.AsNumpy(["truth."+particle+"Phi"])["truth."+particle+"Phi"].astype(np.float64)
         dict["truPhi_"+particle] = truPhi
-        truAcc = dfTruth.AsNumpy(["accepted_"+particle])["accepted_"+particle].astype(np.uint32)
-        dict["truAcc_"+particle] = truAcc
         
         # fast sim reconstructed data + acceptances
         dfRecon = ROOT.RDataFrame('recon',"results10/"+particle+"/predictions.root")
@@ -81,6 +84,16 @@ if __name__ == '__main__':
         dfAcc = ROOT.RDataFrame('acceptance',"results10/"+particle+"/simulation_acceptances.root")
         
         recAcc = dfAcc.AsNumpy(["accept_"+particle])["accept_"+particle].astype(np.uint32)
+        
+        # Put in nullPtrs based of acceptances
+        recP[recAcc == 0] = nullPtr
+        recTheta[recAcc == 0] = nullPtr
+        recPhi[recAcc == 0] = nullPtr
+        M[recAcc == 0] = nullPtr
+        PID[recAcc == 0] = nullPtr
+        sync[recAcc == 0] = u_nullPtr
+        
+        
         dict["recAcc_"+particle] = recAcc
 
         i += 1
@@ -92,7 +105,6 @@ if __name__ == '__main__':
     truP_string = "ROOT::RVecD{"
     truTheta_string = "ROOT::RVecD{"
     truPhi_string = "ROOT::RVecD{"
-    truAcc_string = "ROOT::RVecU{"
     
     recP_string = "ROOT::RVecD{"
     recTheta_string = "ROOT::RVecD{"
@@ -111,7 +123,6 @@ if __name__ == '__main__':
             truP_string += "truP_{0}}}".format(particle)
             truTheta_string += "truTheta_{0}}}".format(particle)
             truPhi_string += "truPhi_{0}}}".format(particle)
-            truAcc_string += "truAcc_{0}}}".format(particle)
             
             recP_string += "recP_{0}}}".format(particle)
             recTheta_string += "recTheta_{0}}}".format(particle)
@@ -126,7 +137,6 @@ if __name__ == '__main__':
             truP_string += "truP_{0},".format(particle)
             truTheta_string += "truTheta_{0},".format(particle)
             truPhi_string += "truPhi_{0},".format(particle)
-            truAcc_string += "truAcc_{0},".format(particle)
             
             recP_string += "recP_{0},".format(particle)
             recTheta_string += "recTheta_{0},".format(particle)
@@ -139,19 +149,26 @@ if __name__ == '__main__':
                      
         j += 1
     
-    # Compile all particle columns
-    df = df.Define("truP",truP_string).Define("truTheta",truTheta_string).Define("truPhi",truPhi_string)
-    df =df.Define("recP",recP_string).Define("recTheta",recTheta_string).Define("recPhi",recPhi_string)
-    df = df.Define("truAcc",truAcc_string).Define("recAcc",recAcc_string)
-    df = df.Define("M",M_string).Define("PID",PID_string).Define("Sync",sync_string)
+    # Compile all particle columns into temp columns
+    df =df.Define("recP_temp",recP_string).Define("recTheta_temp",recTheta_string).Define("recPhi_temp",recPhi_string)
+    df = df.Define("recAcc_temp",recAcc_string)
+    df = df.Define("M_temp",M_string).Define("PID_temp",PID_string).Define("Sync_temp",sync_string)
     
+    
+    # Remove null pointers for the wanted columns
+    df = df.Define("truP",truP_string).Define("truTheta",truTheta_string).Define("truPhi",truPhi_string)
+    df =df.Define("recP","ROOT::VecOps::Filter(recP_temp,valFilter)").Define("recTheta","ROOT::VecOps::Filter(recTheta_temp,valFilter)").Define("recPhi","ROOT::VecOps::Filter(recPhi_temp,valFilter)")
+    df = df.Define("recAcc","ROOT::VecOps::Filter(recAcc_temp,accFilter)")
+    df = df.Define("M","ROOT::VecOps::Filter(M_temp,valFilter)").Define("PID","ROOT::VecOps::Filter(PID_temp,valFilter)").Define("Sync","ROOT::VecOps::Filter(Sync_temp,u_valFilter)")
     # Perform any filter/cuts
     
     # Save the wanted columns to file
-    df.Display(['truP','truTheta', 'truPhi', 'truAcc', 'recP', 'recTheta', 'recPhi', 'recAcc', 'M', 'PID', 'Sync']).Print()
-    df.Snapshot('tree', './data/master.root', ['truP','truTheta', 'truPhi', 'truAcc', 'recP', 'recTheta', 'recPhi', 'recAcc', 'M', 'PID', 'Sync'])
+    df.Display(['truP','truTheta', 'truPhi', 'recP', 'recTheta', 'recPhi', 'recAcc'], 20).Print()
+    #df.Display(['recP', 'recTheta', 'recPhi', 'recAcc', 'M', 'PID', 'Sync']).Print()
+    df.Snapshot('tree', './data/master.root', ['truP','truTheta', 'truPhi', 'recP', 'recTheta', 'recPhi', 'recAcc', 'M', 'PID', 'Sync'])
     
     # Test
-    # file = ROOT.TFile.Open("master.root", "READ")
-    # tree = file.tree
-    # print(tree.GetEntries())
+    # file = ROOT.TFile.Open("results10/p/predictions.root", "READ")
+    # file2 = ROOT.TFile.Open("results10/p/simulation_acceptances.root", "READ")
+    # tree = file.recon
+    # tree2 = file2.acceptance
