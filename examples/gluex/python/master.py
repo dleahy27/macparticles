@@ -149,7 +149,7 @@ if __name__ == '__main__':
     
     # Save the wanted columns to file
     df.Display(['truP','truTheta', 'truPhi', 'truAcc', 'recP', 'recTheta', 'recPhi', 'recAcc', 'M', 'PID', 'Sync']).Print()
-    df.Snapshot('tree', 'master.root', ['truP','truTheta', 'truPhi', 'truAcc', 'recP', 'recTheta', 'recPhi', 'recAcc', 'M', 'PID', 'Sync'])
+    df.Snapshot('tree', './data/master.root', ['truP','truTheta', 'truPhi', 'truAcc', 'recP', 'recTheta', 'recPhi', 'recAcc', 'M', 'PID', 'Sync'])
     
     # Test
     # file = ROOT.TFile.Open("master.root", "READ")
