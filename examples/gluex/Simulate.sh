@@ -28,7 +28,7 @@ main() {
     done
 
     # Plotting etc. find a way to get number of entries better
-    python3 ./python/master.py pip,pim 1000000
+    python3 ./python/master.py pip,pim,p 1000000
 }
 
 # Execute and time above
@@ -39,6 +39,6 @@ time main
 # Getting number of events, can pass as an argument similar to particles
 # particle names - want to generalise but need pip and pi+, proton and p etc. 
 # -> how do I generalise this? Could have a bunch of if statements but that defeats the generalisation
-# ^ also applies to master.py and Configure.C
-# for master.py file/directories and variables change between proton and p
+# ^ also applies to Configure.C
 # Need to generalise Configure.C for each particle
+# Could always make Configure.C be manually edited
