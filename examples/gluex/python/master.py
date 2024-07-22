@@ -1,6 +1,4 @@
-# Need better name
-# ... .py - Takes in all simulated particle data and combines into TTree to be read as a dataframe
-# all the needed truth and reconstructed data as well as a sync file to point to truth
+# Imports and const definitions
 import numpy as np
 import ROOT
 import os
@@ -63,11 +61,11 @@ if __name__ == '__main__':
         dfTruth = ROOT.RDataFrame('tree',"./data/gluex_reaction.root")
         
         # Read in the momentum arrays
-        truP = dfTruth.AsNumpy(columns=["truth."+particle+"P"])["truth."+particle+"P"].astype(np.float64)
+        truP = dfTruth.AsNumpy(columns=["truth.P["+i+"]"])["truth.P["+i+"]"].astype(np.float64)
         dict["truP_"+particle] = truP
-        truTheta = dfTruth.AsNumpy(["truth."+particle+"Theta"])["truth."+particle+"Theta"].astype(np.float64)
+        truTheta = dfTruth.AsNumpy(columns=["truth.Theta["+i+"]"])["truth.Theta["+i+"]"].astype(np.float64)
         dict["truTheta_"+particle] = truTheta
-        truPhi = dfTruth.AsNumpy(["truth."+particle+"Phi"])["truth."+particle+"Phi"].astype(np.float64)
+        truPhi = dfTruth.AsNumpy(columns=["truth.Phi["+i+"]"])["truth.Phi["+i+"]"].astype(np.float64)
         dict["truPhi_"+particle] = truPhi
         
         # fast sim reconstructed data + acceptances
@@ -166,9 +164,3 @@ if __name__ == '__main__':
     df.Display(['truP','truTheta', 'truPhi', 'recP', 'recTheta', 'recPhi', 'recAcc'], 20).Print()
     #df.Display(['recP', 'recTheta', 'recPhi', 'recAcc', 'M', 'PID', 'Sync']).Print()
     df.Snapshot('tree', './data/master.root', ['truP','truTheta', 'truPhi', 'recP', 'recTheta', 'recPhi', 'recAcc', 'M', 'PID', 'Sync'])
-    
-    # Test
-    # file = ROOT.TFile.Open("results10/p/predictions.root", "READ")
-    # file2 = ROOT.TFile.Open("results10/p/simulation_acceptances.root", "READ")
-    # tree = file.recon
-    # tree2 = file2.acceptance
