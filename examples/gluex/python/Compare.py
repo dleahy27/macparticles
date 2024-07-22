@@ -46,6 +46,7 @@ if __name__ == '__main__':
     # Open input/output files and relevant trees
     inFile = ROOT.TFile.Open("/w/work4/jlab/halld/sim/2017-01/gen_amp/ver46/amo_merged/tree_pippim__B4_gen_amp/merged/tree_pippim__B4_gen_amp_031036.root", "READ")
     inTree = inFile.pippim__B4_Tree
+    N = inTree.GetEntries()
     
     outFile = ROOT.TFile.Open("gluex_reaction.root", "update")
     outTree = outFile.tree
@@ -60,7 +61,7 @@ if __name__ == '__main__':
     
     # Loop over each value in the input Tree
     for entry in inTree:
-        ProgressBar(int(i), init_time, 1902527)
+        ProgressBar(int(i), init_time, N)
         # Store each particles data in the recon struct
         recon.pipP = entry.Thrown__P4[1].Rho()
         recon.pipTheta = entry.Thrown__P4[1].Theta()
