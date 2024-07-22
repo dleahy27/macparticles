@@ -12,15 +12,9 @@ from time import time
 # Define a c++ struct
 ROOT.gInterpreter.Declare("""
 struct event {
-    Double_t pP=0;
-    Double_t pTheta=0;
-    Double_t pPhi=0;
-    Double_t pipP=0;
-    Double_t pipTheta=0;
-    Double_t pipPhi=0;
-    Double_t pimP=0;
-    Double_t pimTheta=0;
-    Double_t pimPhi=0;
+    std::vector<Double_t> P = [0,0,0] 
+    std::vector<Double_t> Theta = [0,0,0] 
+    std::vector<Double_t> Phi = [0,0,0] 
 };
 """)
 
@@ -77,16 +71,17 @@ def HddmToRoot(input_name, output_name):
     # Initialise TTree branches
     # As accepted is a boolean, need to initialise using C++
     # Right now setting all to true
-    accepted_code = """
-Bool_t accepted_p=kTRUE;
-tree->Branch(Form("accepted_p"),&accepted_p);
-Bool_t accepted_pip=kTRUE;
-tree->Branch(Form("accepted_pip"),&accepted_pip);
-Bool_t accepted_pim=kTRUE;
-tree->Branch(Form("accepted_pim"),&accepted_pim);
-"""
-    # Run above C++ code
-    ROOT.gInterpreter.ProcessLine(accepted_code)
+    # Will be read in by rec code
+#     accepted_code = """
+# Bool_t accepted_p=kTRUE;
+# tree->Branch(Form("accepted_p"),&accepted_p);
+# Bool_t accepted_pip=kTRUE;
+# tree->Branch(Form("accepted_pip"),&accepted_pip);
+# Bool_t accepted_pim=kTRUE;
+# tree->Branch(Form("accepted_pim"),&accepted_pim);
+# """
+#     # Run above C++ code
+#     ROOT.gInterpreter.ProcessLine(accepted_code)
 
     # beam = ...
     truth = ROOT.event()
@@ -116,15 +111,18 @@ tree->Branch(Form("accepted_pim"),&accepted_pim);
             for product in reaction.getVertices()[0].getProducts():
                 pdg  = product.pdgtype
                 # Check pdg of each event (only want proton and pi+-)
+                # Find a way to generalise this
+                # Probably read in particles to keep it consistent, can then loop over i.e
+                # for particle in particles, if pdg = pdg then i+= 1 and set array
                 if pdg == 2212:
                     for momentum in product.getMomenta():
-                        truth.pP, truth.pTheta, truth.pPhi = CartesianToSpherical(momentum)
+                        truth.P[0], truth.Theta[0], truth.Phi[0] = CartesianToSpherical(momentum)
                 elif pdg == 211:
                     for momentum in product.getMomenta():
-                        truth.pipP, truth.pipTheta, truth.pipPhi = CartesianToSpherical(momentum)
+                        truth.P[1], truth.Theta[1], truth.Phi[1] = CartesianToSpherical(momentum)
                 elif pdg == -211:
                     for momentum in product.getMomenta():
-                        truth.pimP, truth.pimTheta, truth.pimPhi = CartesianToSpherical(momentum)
+                        truth.P[2], truth.Theta[2], truth.Phi[2] = CartesianToSpherical(momentum)
                 else:
                     continue
 
@@ -138,12 +136,15 @@ if __name__ == '__main__':
     # Read in arguments from bash script command line
     input_data = sys.argv[1] 
     output_name = sys.argv[2]
+    # maybe particles to generalise?
 
     # Call Hddm Function 
     HddmToRoot(input_data, output_name)
 
 # %%
 # Sort progress bar => find way to extract total events from hddm
+# Something about putting in branch data, can ask tuesday
+# Find a way to generalise better. Idea on line 113
 # %%
 
 
