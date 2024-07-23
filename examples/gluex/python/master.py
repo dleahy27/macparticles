@@ -39,7 +39,12 @@ def GetPid(particle):
 if __name__ == '__main__':
     # Get the reaction particles from command line
     particles = sys.argv[1].split(",")
-    nEvents = int(sys.argv[2])
+    
+    # Open file and get number of events
+    tempFile = ROOT.TFile.Open("./data/gluex_reaction.root", "READ")
+    tempTree = tempFile.tree
+    nEvents = tempTree.GetEvents()
+    tempFile.Close()
     
     # Initialise dict and counter
     dict = {}
@@ -158,9 +163,8 @@ if __name__ == '__main__':
     df =df.Define("recP","ROOT::VecOps::Filter(recP_temp,valFilter)").Define("recTheta","ROOT::VecOps::Filter(recTheta_temp,valFilter)").Define("recPhi","ROOT::VecOps::Filter(recPhi_temp,valFilter)")
     df = df.Define("recAcc","ROOT::VecOps::Filter(recAcc_temp,accFilter)")
     df = df.Define("M","ROOT::VecOps::Filter(M_temp,valFilter)").Define("PID","ROOT::VecOps::Filter(PID_temp,valFilter)").Define("Sync","ROOT::VecOps::Filter(Sync_temp,u_valFilter)")
+    
     # Perform any filter/cuts
     
     # Save the wanted columns to file
-    df.Display(['truP','truTheta', 'truPhi', 'recP', 'recTheta', 'recPhi', 'recAcc'], 20).Print()
-    #df.Display(['recP', 'recTheta', 'recPhi', 'recAcc', 'M', 'PID', 'Sync']).Print()
     df.Snapshot('tree', './data/master.root', ['truP','truTheta', 'truPhi', 'recP', 'recTheta', 'recPhi', 'recAcc', 'M', 'PID', 'Sync'])
