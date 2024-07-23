@@ -12,9 +12,9 @@ from time import time
 # Define a c++ struct
 ROOT.gInterpreter.Declare("""
 struct event {
-    std::vector<Double_t> P = [0,0,0] 
-    std::vector<Double_t> Theta = [0,0,0] 
-    std::vector<Double_t> Phi = [0,0,0] 
+    std::vector<double> P{0,0,0}; 
+    std::vector<double> Theta{0,0,0}; 
+    std::vector<double> Phi{0,0,0};
 };
 """)
 
@@ -135,11 +135,14 @@ def HddmToRoot(input_name, output_name):
 if __name__ == '__main__':
     # Read in arguments from bash script command line
     input_data = sys.argv[1] 
-    output_name = sys.argv[2]
+    output_name = os.path.join("data", "gluex_reaction")
     # maybe particles to generalise?
 
     # Call Hddm Function 
-    HddmToRoot(input_data, output_name)
+    #HddmToRoot(input_data, output_name)
+    df = ROOT.RDataFrame("tree", output_name+".root")
+    df = df.Define("pP","truth.P[0]")
+    df.Display("pP",10).Print()
 
 # %%
 # Sort progress bar => find way to extract total events from hddm
