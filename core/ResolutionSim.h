@@ -14,7 +14,7 @@ class ResolutionSim {
     SetOutputDir(con.SimulationDir());
   }
 
-  virtual void Track(DataLoader* df)=0;
+  virtual void Track(DataLoader* df, string particle, unsigned int i)=0;
   
   void SetModelDir(const string& dir){
     _modelSave=dir.c_str();

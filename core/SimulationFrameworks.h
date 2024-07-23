@@ -3,7 +3,7 @@
 #include "PyAcceptanceSim.h"
 #include "DTResolutionSim.h"
 
-void SimWithKerasAccDTRes(ConfigureSimulation& conf,DataLoader& data){
+void SimWithKerasAccDTRes(ConfigureSimulation& conf,DataLoader& data, string particle, unsigned int i){
 
 
   //Check acceptances
@@ -17,6 +17,6 @@ void SimWithKerasAccDTRes(ConfigureSimulation& conf,DataLoader& data){
 
   //apply tracking resolutions
   DTResolutionSim resSim(conf);
-  resSim.Track(&data);
+  resSim.Track(&data, particle, i);
   
 }

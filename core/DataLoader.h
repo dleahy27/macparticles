@@ -116,7 +116,14 @@ class DataLoader: public TObject{ //for TPython
     return DataFrame(); 
   }
 
-
+  void Something(string particle, unsigned int i){
+    // Read out arrays into seperate columns
+    auto df = DataFrame();
+    df = df.Define(Form("truth_%sP", particle.c_str()),Form("truth.P[%i]", i));
+    df = df.Define(Form("truth_%sTheta", particle.c_str()),Form("truth.Theta[%i]", i));
+    df = df.Define(Form("truth_%sPhi", particle.c_str()),Form("truth.Phi[%i]", i));
+    _currNode = df;
+  }
   ROOT::RDF::RNode  DataFrame(){return _currNode;}
  
   virtual void LoadGenerated(){
@@ -126,6 +133,8 @@ class DataLoader: public TObject{ //for TPython
     _currNode = df;
   }
   void SetTruthVars(const varnames_t& vars){_truthVars=vars;}
+
+  void SetGenVars(const varnames_t& vars){_genVars=vars;}
   
   void ConfigVars(const datavars_t& vars){
     //Set truth values here if you want to use plotter
@@ -282,7 +291,10 @@ class DataLoader: public TObject{ //for TPython
       std::replace( name.begin(), name.end(), '.', '_');
       _normTruthVars.push_back(name);
       std::cout<<"AddNormalisedTruthVars() for variable "<<var.acc_name<<std::endl;
+      // var.acc_name.c_str() returns an undeclared identifier
+      // THis define column is what is fucking up
       DefineColumn(name,Form("(%s-(%lf))/%lf",var.acc_name.c_str(),var.min,range));
+      
     }
   }
 
