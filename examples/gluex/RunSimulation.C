@@ -1,6 +1,22 @@
-void RunSimulation(string particle,string simparticle,string simdir,string outdir){
+void RunSimulation(string particle, string simparticle){
   
+  unsigned int i;
+
   auto info  = TrainingInfo(simparticle,"training.root");
+  string outdir = "results10";
+  string simdir = "fast_sim/";
+
+  // try find way to generalise this could always put counter as functional argument
+  if (particle == "p"){
+    i = 0;
+  } else if (particle == "pip"){
+    i = 1;
+  } else if (particle == "pim"){
+    i = 2;
+  } else {
+    return ;
+
+  }
 
   ConfigureSimulation config;
   config.Load(simdir);
@@ -10,17 +26,21 @@ void RunSimulation(string particle,string simparticle,string simdir,string outdi
   config.UsePid(simparticle);
 
   //configure the data loader for requested particle
-  DataLoader  dl("tree", "gluex_reaction.root");
+  DataLoader  dl("tree", "./data/gluex_reaction.root");
+  dl.Something(particle, i);
   
 
   //if variables in new tree are different from original simulated data
   // auto varPrefix = std::string("XXX")+particle;
   // accepted name, generated name, reconstructed name
   auto pname = particle.data();
-  cout << "\n HIIIIIIIIIIIIIIIIII" << pname << "\n";
-  dl.ConfigVars({{"",Form("truth.%sP",pname),Form("%sP",pname),"Momentum",0,7},
-   	{"",Form("truth.%sTheta",pname),Form("%sTheta",pname),"#theta",0,1.0},
-   	  {"",Form("truth.%sPhi",pname),Form("%sPhi",pname),"#phi",-TMath::Pi(),TMath::Pi()}});	
+
+  // remove config vars replace with SetGenVars and SetTruthVars
+  //dl.SetGenVars();
+  //dl.SetTruVars();
+  dl.ConfigVars({{"",Form("truth_%sP", pname),Form("%sP",pname),"Momentum",0,7},
+   	{"",Form("truth_%sTheta", pname),Form("%sTheta",pname),"#theta",0,1.0},
+   	  {"",Form("truth_%sPhi", pname),Form("%sPhi",pname),"#phi",-TMath::Pi(),TMath::Pi()}});	
   
   /////if variables are just the same as the original simulation
   //// dl.SimVars(info.variables);
@@ -28,9 +48,10 @@ void RunSimulation(string particle,string simparticle,string simdir,string outdi
   dl.SetFractionToProcess(1);
 
   //and run fast simulation
-  SimWithKerasAccDTRes(config,dl);
+  SimWithKerasAccDTRes(config,dl,particle,i);
 
-  ResolutionPlotter(dl,config).PlotSimulation();
+  // Can ignore for now
+  //ResolutionPlotter(dl,config).PlotSimulation();
 
    
 }
