@@ -36,7 +36,7 @@ class DTResolutionSim : public ResolutionSim {
     auto conf = file->Get<TDTResConfig>("TDTResConfig");
 
     dl->TakeDetailedVarsInfo(conf->detailVars); //do not copy new names just ranges
-    dl->Something(particle, i);
+    dl->UnloadColumn(particle, i); // Reads out the vector into seperate columns
 
     //use rdataframe to create required columns
     // issue here! Undeclared Identifier

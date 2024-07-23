@@ -116,7 +116,7 @@ class DataLoader: public TObject{ //for TPython
     return DataFrame(); 
   }
 
-  void Something(string particle, unsigned int i){
+  void UnloadColumn(string particle, unsigned int i){
     // Read out arrays into seperate columns
     auto df = DataFrame();
     df = df.Define(Form("truth_%sP", particle.c_str()),Form("truth.P[%i]", i));
@@ -132,9 +132,6 @@ class DataLoader: public TObject{ //for TPython
   void LoadDataFrame( ROOT::RDF::RNode df){
     _currNode = df;
   }
-  void SetTruthVars(const varnames_t& vars){_truthVars=vars;}
-
-  void SetGenVars(const varnames_t& vars){_genVars=vars;}
   
   void ConfigVars(const datavars_t& vars){
     //Set truth values here if you want to use plotter
@@ -182,12 +179,15 @@ class DataLoader: public TObject{ //for TPython
   }
   
   void SetDiffVars(const varnames_t& vars){_diffVars=vars;}
+  void SetTruthVars(const varnames_t& vars){_truthVars=vars;}
+  void SetGenVars(const varnames_t& vars){_genVars=vars;}
   void SetReconVars(const varnames_t& vars){_reconVars=vars;}
   void SetAcceptVar(const string& var){_acceptVar=var;}
   void SetFastAcceptVar(const string& var){_fastAccVar=var;}
   void SetFastAcceptWgt(const string& var){_fastAccWeight=var;}
   void SetFastReWeight(const string& var){_fastReWeight=var;}
   void SetPDGVar(const string& var){_pdgVar=var;}
+  
   
   varnames_t GetTruthVars()const {return _truthVars;}
   varnames_t GetGenVars()const {return _genVars;}
