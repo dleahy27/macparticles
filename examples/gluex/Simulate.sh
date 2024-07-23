@@ -1,34 +1,32 @@
 #!/usr/bin/bash
 # Variables for file locations
 py="./python/"
-output_dir="./data"
 macparticles="../../macros/Load.C"
 
 main() {
-    # Check if directory exists
-    if [ ! -d "${output_dir}" ]; then
-        mkdir "${output_dir}"
-    fi
-
     # Run configuration
     macparticles Configure.C
 
     # Run training, reweight and resolutions for each particle
+    # Edit Training, no need for some command line arguments
+    # Keeps program more consistent
     for particle in ${@}
     do
-        macparticles 'RunAcceptanceTraining( ${particle},"training.root","fast_sim" ).C'
-        macparticles 'RunReweightTraining( ${particle},"training.root","fast_sim" ).C'
-        macparticles 'RunResolutionTraining( ${particle},"training.root","fast_sim" ).C'
+        macparticles 'RunAcceptanceTraining( ${particle} ).C'
+        macparticles 'RunReweightTraining( ${particle} ).C'
+        macparticles 'RunResolutionTraining( ${particle} ).C'
     done
 
     # Run simulation for each particle
+    i=0
     for particle in ${@}
     do
-        macparticles 'RunSimulation( "${particle}","${particle}","fast_sim/","results10" ).C'
+        macparticles 'RunSimulation( "${particle}","${particle}",${i} ).C'
+        ((i+=1))
     done
 
     # Plotting etc. find a way to get number of entries better
-    python3 ./python/master.py pip,pim,p 1000000
+    python3 ./python/master.py ${@}
 }
 
 # Execute and time above
@@ -36,7 +34,6 @@ time main
 
 
 # Current issues:
-# Getting number of events, can pass as an argument similar to particles
 # particle names - want to generalise but need pip and pi+, proton and p etc. 
 # -> how do I generalise this? Could have a bunch of if statements but that defeats the generalisation
 # ^ also applies to Configure.C
