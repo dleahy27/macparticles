@@ -7,9 +7,7 @@ import ROOT
 from array import array
 import math
 from time import time
-# %%
 
-# Function to display progress bar to terminal
 def ProgressBar(i, initial_wall_time, N ):
     a = int(20*i/N)
 
@@ -28,23 +26,11 @@ def ProgressBar(i, initial_wall_time, N ):
 
     return
 
-def StringToPdg(particle):
-    # Convert strings to interger PDG values
-    # Only working with pi+- proton and gamma
-    if particle == "Gamma":
-        return 22
-    elif particle == "Pi+":
-        return 211
-    elif particle == "Pi-":
-        return -211
-    elif particle == "Proton":
-        return 2212
-    else:
-        return 
+def GetPid(_particle):
+    return pdg.Instance().GetParticle(_particle).PdgCode() 
 
 def CartesianToSpherical(momentum_xyz):
     # Takes in momentum class from Hddm library
-    # Converts cartesian momentum to momentum norm and spherical coordinates
     p = math.sqrt((momentum_xyz.px)**2 + (momentum_xyz.py)**2 + (momentum_xyz.pz)**2)
     phi = math.atan2(momentum_xyz.py,momentum_xyz.px)
     theta = math.acos(momentum_xyz.pz/p)
@@ -52,9 +38,9 @@ def CartesianToSpherical(momentum_xyz):
     return p,theta,phi
 
 def HddmLoader(data_path, output_name, particle):
-    # Loads HDDM reader for each particle file
     print "Loading and converting all ", particle, " files from ", data_path, "."
-    # Counters
+    
+    # Progress Bar inits
     i = 1
     initial_wall_time = time()
 
@@ -113,6 +99,7 @@ def HddmToRoot(input_name, output_name, i):
     except:
         print "The file, ", input_name, " cannot be read."
         return
+    
     # Loop over all the events
     for rec in f:
         for reaction in rec.getReactions():
@@ -130,23 +117,21 @@ def HddmToRoot(input_name, output_name, i):
     
         # Particle is accepted/detected if its energy is detected or track is reconstructed
         for track in rec.getChargedTracks():
-            if  StringToPdg(track.ptype) == tru_pdg[0]:
-                rec_track_pdg[0] = StringToPdg(track.ptype)
+            if  GetPid(track.ptype) == tru_pdg[0]:
+                rec_track_pdg[0] = GetPid(track.ptype)
                 acceptance[0] = 1
                 for fit in track.getTrackFits():
                     rec_track_chi2[0] = fit.chisq
                     rec_track_p[0], rec_track_theta[0], rec_track_phi[0] = CartesianToSpherical(fit)
             else:
                 continue
-
-        
+ 
         for fcal in rec.getFcalShowers():
             rec_cluster_fcal[0] = fcal.E
         
         for bcal in rec.getBcalShowers():
             rec_cluster_bcal[0] = bcal.E
         
-        # Fill tree then write
         tree.Fill()
     myFile.Write()
 
