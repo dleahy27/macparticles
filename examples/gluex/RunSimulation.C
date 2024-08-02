@@ -1,42 +1,39 @@
 void RunSimulation(string particle, string simparticle, unsigned int i){
 
-  auto info  = TrainingInfo(simparticle,"training.root");
+  auto info  = TrainingInfo(particle,"training.root");
   string outdir = "results10";
   string simdir = "fast_sim/";
 
   ConfigureSimulation config;
   config.Load(simdir);
   //output directory for simulated data
-  config.SetParticleName(particle);
+  config.SetParticleName(simparticle);
   config.Simulate(outdir);
-  config.UsePid(simparticle);
+  config.UsePid(particle);
 
   //configure the data loader for requested particle
   DataLoader  dl("tree", "./data/gluex_reaction.root");
-  dl.UnloadColumn(particle, i);
-  
 
   //if variables in new tree are different from original simulated data
   // auto varPrefix = std::string("XXX")+particle;
   // accepted name, generated name, reconstructed name
-  auto pname = particle.data();
+  auto pname = simparticle.data();
 
-  // remove config vars replace with SetGenVars and SetTruthVars
-  dl.SetTruthVars({Form("truth_%sP", pname),Form("truth_%sTheta", pname), Form("truth_%sPhi", pname)});
-  dl.SetGenVars({Form("truth_%sP", pname),Form("truth_%sTheta", pname), Form("truth_%sPhi", pname)});
+  dl.SetTruthVars({Form("truth_%sP",pname),Form("truth_%sTheta",pname), Form("truth_%sPhi",pname)});
+  dl.SetGenVars({Form("truth_%sP",pname),Form("truth_%sTheta",pname), Form("truth_%sPhi",pname)});
   dl.SetReconVars({Form("%sP",pname),Form("%sTheta",pname), Form("%sPhi",pname)});
 
-  /*dl.ConfigVars({{"",Form("truth_%sP", pname),Form("%sP",pname),"Momentum",0,7},
-   	{"",Form("truth_%sTheta", pname),Form("%sTheta",pname),"#theta",0,1.0},
-   	  {"",Form("truth_%sPhi", pname),Form("%sPhi",pname),"#phi",-TMath::Pi(),TMath::Pi()}});	
-  */
+  dl.UnloadColumnsSim(simparticle, i);
+  
+
+  
   /////if variables are just the same as the original simulation
   //// dl.SimVars(info.variables);
 
   dl.SetFractionToProcess(1);
 
   //and run fast simulation
-  SimWithKerasAccDTRes(config,dl,particle,i);
+  SimWithKerasAccDTRes(config,dl,simparticle, i);
 
   // Can ignore for now
   //ResolutionPlotter(dl,config).PlotSimulation();

@@ -1,7 +1,9 @@
-//macparticles RunAcceptanceTraining.C("pi+","training.root","fast_sim")'
-void RunAcceptanceTraining(string particle,string filename,string simdir){
+//macparticles RunAcceptanceTraining.C( "pi+" )'
+void RunAcceptanceTraining(string particle, string radparticle = "False"){
 {
-
+  
+  string filename = "training.root";
+  string simdir = "fast_sim";
   //get the data, which has been configured in the Configure.C script
   auto dload  = TrainingInfo(particle,filename).TrainingData();
 
@@ -13,6 +15,10 @@ void RunAcceptanceTraining(string particle,string filename,string simdir){
   config.AddPid(particle);
   //Apply Gaussian transform to variables (recommended)
   config.acc_gaustrans = true;
+
+  if (radparticle != "False"){
+    dload->UnloadColumnsRes(radparticle, false);
+  }
  
   
   ///////////////////////////////

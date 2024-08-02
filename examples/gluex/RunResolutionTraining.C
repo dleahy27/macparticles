@@ -1,5 +1,7 @@
-void RunResolutionTraining(string particle,string filename,string simdir){
+void RunResolutionTraining(string particle, string radparticle = "False"){
  
+  string simdir = "fast_sim";
+  string filename = "training.root";
   auto dload  = TrainingInfo(particle,filename).TrainingData();
 
   
@@ -8,6 +10,11 @@ void RunResolutionTraining(string particle,string filename,string simdir){
   config.Load(simdir);
   //give pdg name for particle we are training
   config.UsePid(particle);
+  // Uncomment for rad data
+  if (radparticle != "False"){
+    dload->UnloadColumnsRes(radparticle, false);
+  }
+  
 
   ///////////////////////////////	
   ///////////////////////////////

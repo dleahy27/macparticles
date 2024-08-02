@@ -1,7 +1,10 @@
-//macparticles 'RunReweightTraining.C( "pi+","training.root","fast_sim" )'
-void RunReweightTraining(string particle,string filename,string simdir)
+//macparticles 'RunReweightTraining.C( "pi+" )'
+void RunReweightTraining(string particle, string radparticle = "False")
   {
+    string filename = "training.root";
+    string simdir = "fast_sim";
     auto dload  = TrainingInfo(particle,filename).TrainingData();
+
 
   
     //Give toplevel configuration directory
@@ -9,6 +12,10 @@ void RunReweightTraining(string particle,string filename,string simdir)
     config.Load(simdir.data());
     //give pdg name for particle we are training
     config.UsePid(particle);
+
+    if (radparticle != "False"){
+      dload->UnloadColumnsRes(radparticle, false);
+  }
 
     //Use a BDT to fine tune the DNN response (recommended but not required)
     BDTAcceptanceModel rewBdt(config,ProcessType::ReWeight);
