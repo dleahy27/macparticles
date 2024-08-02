@@ -5,7 +5,6 @@
 
 void SimWithKerasAccDTRes(ConfigureSimulation& conf,DataLoader& data, string particle, unsigned int i){
 
-
   //Check acceptances
   PyAcceptanceSim accSim(conf);
   accSim.Track(&data);

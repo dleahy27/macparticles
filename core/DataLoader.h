@@ -116,7 +116,7 @@ class DataLoader: public TObject{ //for TPython
     return DataFrame(); 
   }
 
-  void UnloadColumn(string particle, unsigned int i){
+  void UnloadColumnsSim(string particle, unsigned int i){
     // Read out arrays into seperate columns
     auto df = DataFrame();
     df = df.Define(Form("truth_%sP", particle.c_str()),Form("truth.P[%i]", i));
@@ -124,6 +124,27 @@ class DataLoader: public TObject{ //for TPython
     df = df.Define(Form("truth_%sPhi", particle.c_str()),Form("truth.Phi[%i]", i));
     _currNode = df;
   }
+
+  void UnloadColumnsRes(string particle, bool kf=false){
+    // Read out arrays into seperate columns
+    auto df = DataFrame();
+    df = df.Define("truP",Form("tru_pmag[%s]", particle.c_str()));
+    df = df.Define("truTheta",Form("tru_theta[%s]", particle.c_str()));
+    df = df.Define("truPhi",Form("tru_phi[%s]", particle.c_str()));
+    
+    if (kf){
+      df = df.Define("recP",Form("kf_pmag[%s]", particle.c_str()));
+      df = df.Define("recTheta",Form("kf_theta[%s]", particle.c_str()));
+      df = df.Define("recPhi",Form("kf_phi[%s]", particle.c_str()));
+    } else{
+      df = df.Define("recP",Form("rec_pmag[%s]", particle.c_str()));
+      df = df.Define("recTheta",Form("rec_theta[%s]", particle.c_str()));
+      df = df.Define("recPhi",Form("rec_phi[%s]", particle.c_str()));
+    }
+
+    _currNode = df;
+  }
+
   ROOT::RDF::RNode  DataFrame(){return _currNode;}
  
   virtual void LoadGenerated(){
