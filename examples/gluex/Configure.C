@@ -3,9 +3,10 @@
 
   auto info = TrainingInfo{"pi+"};
 
-
   info.treeName = "simtree";
   info.reconFile = "./data/pip_training.root";
+  // info.treeName = "rad_tree";
+  // info.reconFile = "/home/dillon/Desktop/intern24/rad/examples/MCMatched.root";
   
   //what fraction of events in each file do you want to use?
   info.recFrac = 1;
@@ -29,6 +30,8 @@
 
   info.treeName = "simtree";
   info.reconFile = "./data/pim_training.root";
+  // info.treeName = "rad_tree";
+  // info.reconFile = "/home/dillon/Desktop/intern24/rad/examples/MCMatched.root";
   
   //what fraction of events in each file do you want to use?
   info.recFrac = 1;
@@ -53,7 +56,9 @@
 
 
   info.treeName = "simtree";
-  info.reconFile = "./data/proton_training.root";
+  info.reconFile = "./data/p_training.root";
+  // info.treeName = "rad_tree";
+  // info.reconFile = "/home/dillon/Desktop/intern24/rad/examples/MCMatched.root";
   
   //what fraction of events in each file do you want to use?
   info.recFrac = 1;
