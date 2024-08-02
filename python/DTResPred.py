@@ -7,6 +7,8 @@ from ROOT import TDTResConfig
 ############################################################################
 ###PREPARE DATA
 ############################################################################
+# have if statements to change the df_acc depending on particle name
+# find out how to read in the name
 #dfdata=df.DataFrame()
 x_vars =df.GetNormTruthVars()
 n_xvars= x_vars.size()
@@ -16,11 +18,10 @@ print('DTResPred.py : will simulate with x variables ',x_vars)
 #x_data = dfdata.AsNumpy(x_vars);
 x_data = df.GetPredictionsFrame().AsNumpy(x_vars);
 
-
 x_array = np.vstack([x_data[xkey] for xkey in x_data.keys()]).T
-
 #only want to predict for accepted events
 acc_var = df.GetAcceptVar()
+
 acc_data =  df.GetPredictionsFrame().AsNumpy({acc_var});
 acc_array = np.vstack([acc_data[akey] for akey in acc_data.keys()])
 ############################################################################

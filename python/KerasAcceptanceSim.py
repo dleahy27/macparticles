@@ -21,7 +21,7 @@ dfdata= df.GetGeneratedFrame();
 vars = df.GetGenVars()
 nvars= vars.size()
 print('KerasAcceptanceSim.py : will simulate with variables ',vars)
-simdf=dfdata.AsNumpy(vars);
+simdf=dfdata.AsNumpy(vars)
 sim_data = np.vstack([simdf[xkey] for xkey in simdf.keys()]).T
 print(sim_data)
 print('KerasAcceptanceSim.py : number of  events to process ',sim_data.shape)
