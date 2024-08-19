@@ -1,34 +1,40 @@
 # MacParticles - GlueX
 ## Machine Learned Particle Kinematics Using GlueX Simulation Data
 This directory makes use of the already existing framework of macparticles and allows training/simulation of reactions. Here, as an example, is the 2 Pion Photoproduction reaction, 
-$$ \gamma + p \rightarrow p^{'} + \pi^+ + \pi^-.$$
+$$ \gamma + p \rightarrow p^{'} + \pi^{+} + \pi^{-}. $$
 
 The model is trained on GlueX data, differentiating it from the toy model (see [<ins>macparticles/examples/toy](../toy/) for more details), and highlighting the applicability of macparticles to real data. However, to first train on this data it has to be converted into a compatible format for both the training and simulation stages. For this there are two python APIs, Hddm_rToRoot.py and Hddm_sToRoot.py. These APIs read in GlueX hddm files and then convert them to the needed ROOT Tree format for training/simulation - more detail on how both of these APIs function is found below.
 
 The output of the fast simulation itself, in the same format as the future ePIC data. This allows the output to be used within the RAD software developed by Dr. Glazier (author of Macparticles), thus it is expected that the data generated here will be used in conjunction with RAD to develop plots and kinematic information.
 
 ## Scripts
-The reccommended way to run this program is through the use of 2 seperate scripts **Setup.py** and **Simulate.py**. Each of these handle seperate parts of the fastsim, running all the necessary programs as well as cleaning and merging files. Setup.py handles all the data conversion from HDDM files to ROOT, with Simulate.py handling all the training and simulation aspects. **Important!** To run this program the location of gluexrun must be specified in the Setup.py file, and further if using RAD data for resolutions and/or acceptance training make sure to specify it in Configuration.C first.
+The reccommended way to run this program is through the use of 3 seperate scripts **Setup.py**, **Training.py**, and **Simulate.py**. Each of these handle seperate parts of the fastsim, running all the necessary programs as well as cleaning and merging files. Setup.py handles all the data conversion from HDDM files to ROOT, with Training.py handling all the training parts, and Simulate.py the simulation aspects. **Important!** To run this program the location of gluexrun must be specified in the Setup.py file, and further if using for an alternate reacation for the example the configuration files should be changed.
 
 To run the scripts just enter the following commands:
 ```
-python3 Setup.py path/to/training/input.hddm path/to/simulation/input.hddm proton,pip,pim proton,pi+,pi-
-python3 Simulate.py gamma,proton,pi+,pi- Proton,PiPlus,PiMinus gamma,p,pip,pim
+python3 Setup.py <path/to/training/input_name> <path/to/simulation/input.hddm> proton,pip,pim proton,pi+,pi-
+python3 Training.py proton,pi+,pi-
+python3 Simulate.py proton,pi+,pi- p,pip,pim
 ```
+This has been designed for a singular reaction/simulation file, while for training it has been designed to read in multiple files with the filename structure "<input_name>_<particle>_<file_end>". For example, with input_name = particle_gun and particle = proton, the program will loop over all the following files generated using GLUEX: particle_gun_proton_0_10_1.hddm, particle_gun_proton_0_10_2.hddm, particle_gun_proton_0_10_3.hddm, etc.
+
 If you have all the data set up and just want to try different weightings and/or models just run Simulate.py itself.
 ```
-python3 Simulate.py gamma,proton,pi+,pi- Proton,PiPlus,PiMinus gamma,p,pip,pim
+python3 Simulate.py proton,pi+,pi- p,pip,pim
 ```
-Currently there is an option to run Simulate.py with rad data, and further the kinematic fitted data. However, as this option has only been tested for resolution, it has to be activated manually. This can be done by putting in an extra option to all the training macros, as an example:
+Currently there is an option to run Training.py with rad data, and further the kinematic fitted data from that. However, as this option has only been tested for resolution, it has to be activated manually. This can be done by putting in an extra option to all the training macros, as an example:
 ```
-macparticles 'RunResolutionTraining.C( "pi+", "PiPlus", rad=true )'
+macparticles 'RunResolutionTraining.C( "pi+", "PiPlus")'
 ```
-As it has only been tested for resolutions
+It has been written such that the training script can do this automatically by including the RAD identifier, here "**PiPlus**" but note  it has only been tested for resolutions. If running all of training using RAD data you can do this by running,
+```
+python3 Training.py proton,pi+,pi- Proton,PiPlus,PiMinus
+```
 
 ## Training, Simulating and Plotting
 Once the data has been converted the rest is largely the same as for the toy example, only having some of the ROOT macro's code changed to suit this example specifically. Thus, following on from the [<ins>toy example](../toy/) they now need to be configured. Assuming you have already followed the [<ins>set up](macparticles/README.md), this is done by running the command
 ```
-macparticles Configure.C
+macparticles Configure_Hddm.C
 ```
 After this the data can be trained. This is done through entering the command
 ```
@@ -40,8 +46,9 @@ macparticles 'RunReweightTraining.C( "pi+" )'
 ```
 Then finally, the resolutions can be trained by entering
 ```
-'RunResolutionTraining.C( "pi+", "PiPlus" )'
+'RunResolutionTraining.C( "pi+")'
 ```
+Again, if using RAD data you will also need to include the RAD particle identifier. 
 **Note**, each particle has to be trained individually. So the above command has to be entered for each particle, changing both the name and training file to the correct particle.
 
 With every particle trained the simulation can then be executed with
@@ -52,7 +59,7 @@ macparticles 'RunSimulation.C( "pi-","pim",2 )'
 ```
 Following this all the data can be compiled into the RAD format by running master.py,
 ```
-python3 ./python/master.py gamma,p,pip,pim gamma,proton,pi+,pi-
+python3 ./python/master.py gamma,p,pip,pim proton,pi+,pi-
 ``` 
 Following this, for plotting and kinematic information, RAD can be used with this outputted data to make plots.
 ## Data Conversion
@@ -85,4 +92,5 @@ This program was written, tested, and requires the following modules:
 Furthermore, this program requires access to the gluex container to run the HDDM converters and/or Setup.py.
 ## Future Plans // Issues
 - How to read in total number of events in a HDDM file. Needed for progress bar in Hddm_sToRoot.py
-- Generalise core to accept RAD data too
+- Test on another reaction
+- Update Hddm_rToRoot.py to read in non particle gun files
