@@ -10,12 +10,11 @@ void RunResolutionTraining(string particle, string radparticle = "False"){
   config.Load(simdir);
   //give pdg name for particle we are training
   config.UsePid(particle);
-  // Uncomment for rad data
-  if (radparticle != "False"){
+
+  if ( radparticle.compare("False") != 0 ){
     dload->UnloadColumnsRes(radparticle, false);
   }
   
-
   ///////////////////////////////	
   ///////////////////////////////
   ///Here can configure the regressors
@@ -23,7 +22,5 @@ void RunResolutionTraining(string particle, string radparticle = "False"){
   res.SetNRegressors(5);
   res.SetNRandInputs(5);
   res.Train(dload.get());
-
   ResolutionPlotter(*dload.get(),config).PlotTraining();
-
  }

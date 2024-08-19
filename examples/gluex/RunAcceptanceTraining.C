@@ -16,7 +16,7 @@ void RunAcceptanceTraining(string particle, string radparticle = "False"){
   //Apply Gaussian transform to variables (recommended)
   config.acc_gaustrans = true;
 
-  if (radparticle != "False"){
+  if (radparticle == "True"){
     dload->UnloadColumnsRes(radparticle, false);
   }
  
