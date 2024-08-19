@@ -12,7 +12,7 @@ def Train(particles,resparticles=[""], id=False):
     if id:
         os.system(macparticles+" 'Configure_Rad.C'")
     else:
-        os.system(macparticles+" 'Configure_Hddm.C'")
+        os.system(macparticles+" 'Configure_etaphi.C'")
         
            
         
@@ -20,12 +20,12 @@ def Train(particles,resparticles=[""], id=False):
     # Train for each particle
     for i in range(len(particles)):
         if id:
-            # os.system(f"""{macparticles} 'RunAcceptanceTraining.C( "{particles[i]}", "{resparticles[i]}" )'""")
-            # os.system(f"""{macparticles} 'RunReweightTraining.C( "{particles[i]}", "{resparticles[i]}" )'""")
+            os.system(f"""{macparticles} 'RunAcceptanceTraining.C( "{particles[i]}", "{resparticles[i]}" )'""")
+            os.system(f"""{macparticles} 'RunReweightTraining.C( "{particles[i]}", "{resparticles[i]}" )'""")
             os.system(f"""{macparticles} 'RunResolutionTraining.C( "{particles[i]}", "{resparticles[i]}" )'""")
         else:
-            # os.system(f"""{macparticles} 'RunAcceptanceTraining.C( "{particles[i]}" )'""")
-            # os.system(f"""{macparticles} 'RunReweightTraining.C( "{particles[i]}" )'""")
+            os.system(f"""{macparticles} 'RunAcceptanceTraining.C( "{particles[i]}" )'""")
+            os.system(f"""{macparticles} 'RunReweightTraining.C( "{particles[i]}" )'""")
             os.system(f"""{macparticles} 'RunResolutionTraining.C( "{particles[i]}" )'""")
             
             
@@ -44,5 +44,4 @@ if __name__ == '__main__':
     remaining = (time.time() - start_time)         
     mins, secs = divmod(remaining, 60)
     hours, mins = divmod(mins, 60)
-    time_str = str(f"""Total training runtime - {int(hours)}:{int(mins)}:{round(secs,2)}""")
-    print(time_str)
+    print(f"Total runtime - {int(hours)}:{int(mins)}:{round(secs,2)}")
