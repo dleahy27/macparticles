@@ -4,11 +4,12 @@ import os
 import sys
 import glob
 import ROOT
+from ROOT import TDatabasePDG as pdg
 from array import array
 import math
 from time import time
 
-def ProgressBar(i, initial_wall_time, N ):
+def ProgressBar(i, initial_wall_time, N):
     a = int(20*i/N)
 
     remaining = ((time() - initial_wall_time) / i) * (N - i)
@@ -26,10 +27,17 @@ def ProgressBar(i, initial_wall_time, N ):
 
     return
 
-def GetPid(_particle):
-    return pdg.Instance().GetParticle(_particle).PdgCode() 
+def GetParticle(_pid):
+    return pdg.Instance().GetParticle(_pid).GetName()
 
-def CartesianToSpherical(momentum_xyz):
+def CartesianToSpherical(momentum_xyz, mom=1):
+    if mom == 0:
+        r = math.sqrt((momentum_xyz.x)**2 + (momentum_xyz.y)**2 + (momentum_xyz.z)**2)
+        phi = math.atan2(momentum_xyz.y,momentum_xyz.x)
+        theta = math.acos(momentum_xyz.z/r)
+        
+        return r,theta,phi
+    
     # Takes in momentum class from Hddm library
     p = math.sqrt((momentum_xyz.px)**2 + (momentum_xyz.py)**2 + (momentum_xyz.pz)**2)
     phi = math.atan2(momentum_xyz.py,momentum_xyz.px)
@@ -38,14 +46,14 @@ def CartesianToSpherical(momentum_xyz):
     return p,theta,phi
 
 def HddmLoader(data_path, output_name, particle):
-    print "Loading and converting all ", particle, " files from ", data_path, "."
+    print "Loading and converting all ", particle, "."
     
     # Progress Bar inits
     i = 1
     initial_wall_time = time()
 
     # Convert all the HDDM files to Root Trees
-    input_names = glob.glob(data_path+"particle_gun_"+particle+"*.hddm")
+    input_names = glob.glob(data_path+particle+"*.hddm")
     for input_name in input_names:
         ProgressBar(int(i), initial_wall_time, len(input_names))
         HddmToRoot(input_name,output_name,str(i))
@@ -102,12 +110,32 @@ def HddmToRoot(input_name, output_name, i):
     
     # Loop over all the events
     for rec in f:
+        # Reset values
+        acceptance[0] = 0
+        tru_pdg[0] = 0
+        tru_E[0] = 0
+        tru_p[0] = 0
+        tru_theta[0] = 0
+        tru_phi[0] = 0
+        rec_E_bcal[0]= 0
+        rec_E_fcal[0] = 0
+        rec_track_pdg[0] = 0
+        rec_track_chi2[0] = 0
+        rec_track_p[0] = 0
+        rec_track_theta[0] = 0
+        rec_track_phi[0] = 0
+        rec_cluster_fcal[0] = 0
+        rec_cluster_bcal[0] = 0
+        acceptance[0] = 0
+        l1_bits[0] = 0
+        
         for reaction in rec.getReactions():
             for product in reaction.getVertices()[0].getProducts():
                 tru_pdg[0] = product.pdgtype
                 for momentum in product.getMomenta():
                     tru_E[0] = momentum.E 
                     tru_p[0], tru_theta[0], tru_phi[0] = CartesianToSpherical(momentum)
+                        
          
         for trig in rec.getTriggers():
             l1_bits[0] = trig.l1_trig_bits
@@ -117,8 +145,9 @@ def HddmToRoot(input_name, output_name, i):
     
         # Particle is accepted/detected if its energy is detected or track is reconstructed
         for track in rec.getChargedTracks():
-            if  GetPid(track.ptype) == tru_pdg[0]:
-                rec_track_pdg[0] = GetPid(track.ptype)
+            pid = tru_pdg[0]
+            if track.ptype.lower() == GetParticle(pid).lower():
+                rec_track_pdg[0] = pid
                 acceptance[0] = 1
                 for fit in track.getTrackFits():
                     rec_track_chi2[0] = fit.chisq
@@ -127,10 +156,16 @@ def HddmToRoot(input_name, output_name, i):
                 continue
  
         for fcal in rec.getFcalShowers():
-            rec_cluster_fcal[0] = fcal.E
-        
+            acceptance[0] = 1
+            if fcal.E>rec_track_p[0]:
+                rec_track_p[0] = fcal.E
+                r, rec_track_theta[0], rec_track_phi[0] = CartesianToSpherical(fcal, 0)
+
         for bcal in rec.getBcalShowers():
-            rec_cluster_bcal[0] = bcal.E
+            acceptance[0] = 1
+            if bcal.E>rec_track_p[0]:
+                rec_track_p[0] = bcal.E
+                r, rec_track_theta[0], rec_track_phi[0] = CartesianToSpherical(bcal, 0)
         
         tree.Fill()
     myFile.Write()

@@ -13,9 +13,11 @@ ROOT.gInterpreter.Declare("auto accFilter = [](double val){return val!=0;};")
 
 ROOT.gInterpreter.Declare("""
 struct event {
-    std::vector<double> P{0,0,0}; 
-    std::vector<double> Theta{0,0,0}; 
-    std::vector<double> Phi{0,0,0};
+    std::vector<double> P{0,0,0,0,0}; 
+    std::vector<double> Theta{0,0,0,0,0}; 
+    std::vector<double> Phi{0,0,0,0,0};
+    std::vector<int> Pid{0,0,0,0,0};
+    std::vector<float> Mass{0,0,0,0,0};
 };
 
 struct beam {
@@ -36,13 +38,11 @@ def GetMass(_particle):
     return pdg.Instance().GetParticle(_particle).Mass()
 
 def GetPid(_particle):
-    return pdg.Instance().GetParticle(_particle).PdgCode() 
+    return pdg.Instance().GetParticle(_particle).PdgCode()
 
-if __name__ == '__main__':
-    # Get the reaction particles from command line
-    simparticles = sys.argv[1].split(',')
-    particles = sys.argv[2].split(',')
-    
+# Possibly find better way to do
+# E.g loop over variable names
+def Master(simparticles, particles, pdg_particles):
     # Open file and get number of events
     File = ROOT.TFile.Open("./data/gluex_reaction.root", "READ")
     Tree = File.tree
@@ -51,20 +51,20 @@ if __name__ == '__main__':
     # Initialise dict and counter
     dict = {}
 
-    # Using RAD indicing [gamma, p, pip, pim] == [0,1,2,3]
+    # Using RAD indicing e.g. [beam, p, pip, pim] == [0,1,2,3]
     i = 0
     for particle in simparticles:
         # Recreate dataframes every iteration
         dfTruth = ROOT.RDataFrame(Tree)
         
         # Constant particle data
-        recM = np.array([GetMass(particles[i])]*nEvents, dtype=np.float64)
-        truM = np.array([GetMass(particles[i])]*nEvents, dtype=np.float64)
+        recM = np.array([GetMass(pdg_particles[i])]*nEvents, dtype=np.float64)
+        truM = np.array([GetMass(pdg_particles[i])]*nEvents, dtype=np.float64)
         dict["recM_"+particle] = recM
         dict["truM_"+particle] = truM
         
-        recPID = np.array([GetPid(particles[i])]*nEvents, dtype=np.int32)
-        truPID = np.array([GetPid(particles[i])]*nEvents, dtype=np.int32)
+        recPID = np.array([GetPid(pdg_particles[i])]*nEvents, dtype=np.int32)
+        truPID = np.array([GetPid(pdg_particles[i])]*nEvents, dtype=np.int32)
         dict["recPID_"+particle] = recPID
         dict["truPID_"+particle] = truPID
         
@@ -74,7 +74,7 @@ if __name__ == '__main__':
         dict["truSync_"+particle] = truSync
         
         # Seperate case for beam
-        if particle == "gamma":
+        if particle == "beam":
             dfTruth = dfTruth.Define("truthP", f"beam.P")
             dfTruth = dfTruth.Define("truthTheta", f"beam.Theta")
             dfTruth = dfTruth.Define("truthPhi", f"beam.Phi")     
@@ -96,7 +96,7 @@ if __name__ == '__main__':
         dict["truY_"+particle] = truY
         dict["truZ_"+particle] = truZ
         
-        if particle == "gamma":
+        if particle == "beam":
             recP = truP
             recTheta = truTheta
             recPhi = truPhi
@@ -235,3 +235,18 @@ if __name__ == '__main__':
     
     # Save the wanted columns to file
     df.Snapshot('tree', './data/master.root', ['truX','truY', 'truZ', 'recX', 'recY', 'recZ', 'truP','truTheta', 'truPhi', 'recP', 'recTheta', 'recPhi', 'recAcc', 'truM', 'truPID', 'truSync', 'recM', 'recPID', 'recSync'])
+    
+    return 
+
+if __name__ == '__main__':
+    # Get the array of particle names from command line
+    Simparticles = sys.argv[1].split(',')
+    Particles = sys.argv[2].split(',')
+    Pdg_particles = sys.argv[3].split(',')
+    
+    Simparticles.insert(0,"beam")
+    Particles.insert(0,"beam")
+    Pdg_particles.insert(0,"gamma")
+    
+    Master(Simparticles, Particles, Pdg_particles)
+    
