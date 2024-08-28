@@ -12,9 +12,15 @@ The reccommended way to run this program is through the use of 3 seperate script
 
 To run the scripts just enter the following commands:
 ```
+python3 Setup.py <path/to/training/input_name> <path/to/simulation/input.hddm> <pnames> <config_particles> **optional**<decay_particles>
+python3 Training.py <config_particles>
+python3 Simulate.py <config_particles> <pnames> <pdg_names>
+```
+Where config_particles are the names designated to each particle in the specific Configure_.C file, pnames the names for each particle's files, decay_particles the names of any particle that will decay, and pdg_names being the particles names in the ROOT database.For the example above this would just be
+```
 python3 Setup.py <path/to/training/input_name> <path/to/simulation/input.hddm> proton,pip,pim proton,pi+,pi-
 python3 Training.py proton,pi+,pi-
-python3 Simulate.py proton,pi+,pi- p,pip,pim
+python3 Simulate.py proton,pi+,pi- p,pip,pim proton,pi+,pi-
 ```
 This has been designed for a singular reaction/simulation file, while for training it has been designed to read in multiple files with the filename structure "<input_name>_<particle>_<file_end>". For example, with input_name = particle_gun and particle = proton, the program will loop over all the following files generated using GLUEX: particle_gun_proton_0_10_1.hddm, particle_gun_proton_0_10_2.hddm, particle_gun_proton_0_10_3.hddm, etc.
 
@@ -67,6 +73,7 @@ Following this, for plotting and kinematic information, RAD can be used with thi
 Hddm_rToRoot.py is an API to convert simulated reconstruction GlueX HDDM files into the ROOT Tree structure required for **training**. The script will loop through all the files for a particle, converting each one into a respective temporary ROOT file. If run individually, the merging and removal of such temp files will have to be done manually. The script itself can be run with
 ```
 gluexrun python2 ./python/Hddm_rToRoot.py <path/to/input/data> <output_name> <particle>
+gluexrun python2 ./python/Hddm_rToRoot.py <path/to/input/data> proton_training proton
 ```
 The newly created temp files are stored in the data subdirectory, and have specific file endings to allow for easy merging and removal. These can be performed by running
 ```
@@ -78,6 +85,7 @@ These commands have to be run for each particle that is getting trained.
 ### Hddm_sToRoot.py
 This is very similar to the above script, however, this makes use of the hddm_s python module to read in simulated reaction data. The format is slightly different to reconstructed data, thus needing a different script. This can be run through
 ```
+gluexrun python2 ./python/Hddm_sToRoot.py <path/to/input/data> <particles> **optional**<decay particles>
 gluexrun python2 ./python/Hddm_sToRoot.py <path/to/input/data> proton,pi+,pi-
 ```
 This only produces a singular ROOT file as an output and requires no additional commands.
@@ -92,5 +100,5 @@ This program was written, tested, and requires the following modules:
 Furthermore, this program requires access to the gluex container to run the HDDM converters and/or Setup.py.
 ## Future Plans // Issues
 - How to read in total number of events in a HDDM file. Needed for progress bar in Hddm_sToRoot.py
-- Test on another reaction
 - Update Hddm_rToRoot.py to read in non particle gun files
+- Update decay algorithm in Hddm_sToRoot.py to handle N-body decays, currently 2
