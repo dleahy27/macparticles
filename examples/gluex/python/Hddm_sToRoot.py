@@ -97,8 +97,8 @@ def Decay(momentum, decay_pdgs):
     child2.SetXYZM(child2_cart[0], child2_cart[1], child2_cart[2], 0)
     
     # Boost to lab frame
-    child1.Boost(-v_boost)
-    child2.Boost(-v_boost)
+    child1.Boost(v_boost)
+    child2.Boost(v_boost)
     
     child1_p = child1.P()
     child2_p = child2.P()
@@ -166,8 +166,8 @@ def HddmToRoot(input_name, output_name, particles, decay_particles=[""]):
                     truth.Pid[n-1] = 22
                     truth.Pid[n-2] = 22
             
-                    truth.Mass[n-1] = GetMass(truth.Pid[j])
-                    truth.Mass[n-2] = GetMass(truth.Pid[j+1])
+                    truth.Mass[n-1] = GetMass(truth.Pid[n-1])
+                    truth.Mass[n-2] = GetMass(truth.Pid[n-2])
         
                     for momentum in product.getMomenta():
                         truth.P[n-1], truth.Theta[n-1], truth.Phi[n-1], truth.P[n-2], truth.Theta[n-2], truth.Phi[n-2] = Decay(momentum,product.pdgtype) # Decay(momentum,decay_particles)

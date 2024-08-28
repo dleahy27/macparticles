@@ -30,11 +30,11 @@ def ProgressBar(i, initial_wall_time, N):
 def GetParticle(_pid):
     return pdg.Instance().GetParticle(_pid).GetName()
 
-def CartesianToSpherical(momentum_xyz, mom=1):
+def CartesianToSpherical(momentum_xyz, z=0, mom=1):
     if mom == 0:
-        r = math.sqrt((momentum_xyz.x)**2 + (momentum_xyz.y)**2 + (momentum_xyz.z)**2)
+        r = math.sqrt((momentum_xyz.x)**2 + (momentum_xyz.y)**2 + (momentum_xyz.z - z)**2)
         phi = math.atan2(momentum_xyz.y,momentum_xyz.x)
-        theta = math.acos(momentum_xyz.z/r)
+        theta = math.acos((momentum_xyz.z - z)/r)
         
         return r,theta,phi
     
@@ -132,6 +132,8 @@ def HddmToRoot(input_name, output_name, i):
         for reaction in rec.getReactions():
             for product in reaction.getVertices()[0].getProducts():
                 tru_pdg[0] = product.pdgtype
+                for origin in reaction.getVertices()[0].getOrigins():
+                    vz = origin.vz
                 for momentum in product.getMomenta():
                     tru_E[0] = momentum.E 
                     tru_p[0], tru_theta[0], tru_phi[0] = CartesianToSpherical(momentum)
@@ -159,13 +161,13 @@ def HddmToRoot(input_name, output_name, i):
             acceptance[0] = 1
             if fcal.E>rec_track_p[0]:
                 rec_track_p[0] = fcal.E
-                r, rec_track_theta[0], rec_track_phi[0] = CartesianToSpherical(fcal, 0)
+                r, rec_track_theta[0], rec_track_phi[0] = CartesianToSpherical(fcal, z=vz, mom=0)
 
         for bcal in rec.getBcalShowers():
             acceptance[0] = 1
             if bcal.E>rec_track_p[0]:
                 rec_track_p[0] = bcal.E
-                r, rec_track_theta[0], rec_track_phi[0] = CartesianToSpherical(bcal, 0)
+                r, rec_track_theta[0], rec_track_phi[0] = CartesianToSpherical(bcal, z=vz, mom=0)
         
         tree.Fill()
     myFile.Write()

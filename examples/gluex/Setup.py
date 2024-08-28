@@ -20,21 +20,21 @@ def Setup(recon_in, sim_in, particles, Pdg_names, decay_names):
     # Make Config_Hddm.C file for the particles wanted
     
     # Read in HDDM files for each particle
-    # for particle in particles:
-    #     print(f"Converting {particle} files.")
-    #     output_name = os.path.join(output_dir,particle)
+    for particle in particles:
+        print(f"Converting {particle} files.")
+        output_name = os.path.join(output_dir,particle)
 
-    #     # Convert
-    #     os.system(f"""{gluexrun} python2 {py}Hddm_rToRoot.py {recon_in} {output_name} {particle}""")
-    #     print(f"All {particle} files converted, now merging them into one file")
+        # Convert
+        os.system(f"""{gluexrun} python2 {py}Hddm_rToRoot.py {recon_in} {output_name} {particle}""")
+        print(f"All {particle} files converted, now merging them into one file")
 
-    #     # Merge
-    #     os.system(f"""hadd -f "{output_name}_training.root" "{output_name}_"*"_tmp.root" > /dev/null 2>&1""")
-    #     print(f"All {particle} files merged, now removing interim files.")
+        # Merge
+        os.system(f"""hadd -f "{output_name}_training.root" "{output_name}_"*"_tmp.root" > /dev/null 2>&1""")
+        print(f"All {particle} files merged, now removing interim files.")
 
-    #     # Remove
-    #     os.system(f"""rm "{output_name}_"*"_tmp.root" """)
-    #     print("All reconstructed files converted.")
+        # Remove
+        os.system(f"""rm "{output_name}_"*"_tmp.root" """)
+        print("All reconstructed files converted.")
     
     print("Converting simulation files.")
     
